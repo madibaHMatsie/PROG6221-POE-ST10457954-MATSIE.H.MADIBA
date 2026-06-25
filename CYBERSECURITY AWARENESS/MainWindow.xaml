@@ -56,7 +56,7 @@
 			<!-- Task Panel column -->
 		</Grid.ColumnDefinitions>
 
-		<!-- ═══ HEADER (spans both columns) ═══ -->
+		<!-- ═══ HEADER  ═══ -->
 		<Border Grid.Row="0" Grid.ColumnSpan="2" Background="{StaticResource PrimaryColor}" Padding="10">
 			<StackPanel>
 				<TextBlock Text="__  _    ___  ____ ___  ___  ________" FontFamily="Consolas" FontSize="10" Foreground="White" TextAlignment="Center"/>
@@ -71,7 +71,7 @@
 			</StackPanel>
 		</Border>
 
-		<!-- ═══ INFO BAR (spans both columns) ═══ -->
+		<!-- ═══ INFO BAR  ═══ -->
 		<Border Grid.Row="1" Grid.ColumnSpan="2" Background="{StaticResource SecondaryColor}" Padding="8,5">
 			<StackPanel Orientation="Horizontal">
 				<TextBlock Text="👤 User: " Foreground="White" FontWeight="Bold"/>
@@ -83,7 +83,7 @@
 			</StackPanel>
 		</Border>
 
-		<!-- ═══ CHAT MESSAGES (Column 0) ═══ -->
+		<!-- ═══ CHAT MESSAGES  ═══ -->
 		<ScrollViewer Grid.Row="2" Grid.Column="0" 
                       x:Name="ChatScrollViewer" 
                       VerticalScrollBarVisibility="Auto"
@@ -91,20 +91,20 @@
 			<StackPanel x:Name="ChatMessagesPanel" Margin="10" Orientation="Vertical"/>
 		</ScrollViewer>
 
-		<!-- ═══ TASK PANEL (Column 1) ═══ -->
+		<!-- ═══ TASK PANEL ═══ -->
 		<Border Grid.Row="2" Grid.Column="1" Background="#2A2A3A" Margin="2,0,0,0">
 			<StackPanel Margin="10">
 				<TextBlock Text="📋 TASKS" FontWeight="Bold" Foreground="White" FontSize="14" Margin="0,0,0,10"/>
 
-				<Button Content="➕ Add Sample Task" Background="#FF69B4" Foreground="White" 
+				<Button Content=" Add Sample Task" Background="#FF69B4" Foreground="White" 
                         Margin="0,5" Click="AddSampleTask_Click" Height="35"/>
-				<Button Content="📋 Show My Tasks" Background="#0077B6" Foreground="White" 
+				<Button Content="Show My Tasks" Background="#0077B6" Foreground="White" 
                         Margin="0,5" Click="ShowTasks_Click" Height="35"/>
-				<Button Content="🎮 Start Quiz" Background="#2D6A4F" Foreground="White" 
+				<Button Content=" Start Quiz" Background="#2D6A4F" Foreground="White" 
                         Margin="0,5" Click="StartQuiz_Click" Height="35"/>
-				<Button Content="📜 Activity Log" Background="#6C757D" Foreground="White" 
+				<Button Content=" Activity Log" Background="#6C757D" Foreground="White" 
                         Margin="0,5" Click="ShowActivityLog_Click" Height="35"/>
-				<Button Content="❌ Quit" Background="#DC3545" Foreground="White" 
+				<Button Content=" Quit" Background="#DC3545" Foreground="White" 
                         Margin="0,20,0,5" Click="QuitButton_Click" Height="35"/>
 
 				<TextBlock Text="Quick Commands:" Foreground="White" FontSize="11" Margin="0,15,0,5"/>
@@ -118,7 +118,7 @@
 			</StackPanel>
 		</Border>
 
-		<!-- ═══ INPUT AREA (spans both columns) ═══ -->
+		<!-- ═══ INPUT AREA  ═══ -->
 		<Border Grid.Row="3" Grid.ColumnSpan="2" Background="{StaticResource InputBackground}" Padding="10">
 			<Grid>
 				<Grid.ColumnDefinitions>
@@ -163,7 +163,7 @@
 			</Grid>
 		</Border>
 
-		<!-- ═══ STATUS BAR (spans both columns) ═══ -->
+		
 		<StatusBar Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Bottom" 
                    Background="{StaticResource SecondaryColor}" Height="25" Margin="0,0,0,0">
 			<StatusBarItem>
