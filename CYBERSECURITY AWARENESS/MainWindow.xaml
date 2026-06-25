@@ -5,27 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CYBERSECURITY_AWARENESS"
         mc:Ignorable="d"
-        Title="CYBERBOT- CYBERSECURITY AWARENES CHATBOT" 
-		Height="700" Width="900"
-		WindowStartupLocation="CenterScreen"
+        Title="CYBERBOT - CYBERSECURITY AWARENESS CHATBOT" 
+        Height="700" Width="950"
+        WindowStartupLocation="CenterScreen"
         Background="#FFD1DC">
 
 	<Window.Resources>
-		<!-- Colour -->
+		<!-- Colour Scheme -->
 		<SolidColorBrush x:Key="PrimaryColor" Color="#FF69B4"/>
-		
 		<SolidColorBrush x:Key="SecondaryColor" Color="#FF1493"/>
-		
 		<SolidColorBrush x:Key="UserBubbleColor" Color="#FF85B3"/>
-		
 		<SolidColorBrush x:Key="BotBubbleColor" Color="#FFF0F5"/>
-		
 		<SolidColorBrush x:Key="BackgroundColor" Color="#FFD1DC"/>
-		
 		<SolidColorBrush x:Key="InputBackground" Color="#FFE4E1"/>
-		
 
-		<!--  User Messages -->
+		<!-- User Messages -->
 		<Style x:Key="UserMessageStyle" TargetType="Border">
 			<Setter Property="Background" Value="{StaticResource UserBubbleColor}"/>
 			<Setter Property="CornerRadius" Value="15,15,5,15"/>
@@ -34,7 +28,7 @@
 			<Setter Property="HorizontalAlignment" Value="Right"/>
 		</Style>
 
-		<!--  Bot Messages -->
+		<!-- Bot Messages -->
 		<Style x:Key="BotMessageStyle" TargetType="Border">
 			<Setter Property="Background" Value="{StaticResource BotBubbleColor}"/>
 			<Setter Property="CornerRadius" Value="15,15,15,5"/>
@@ -47,30 +41,38 @@
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
+			<!-- Header -->
 			<RowDefinition Height="Auto"/>
+			<!-- Info Bar -->
 			<RowDefinition Height="*"/>
+			<!-- Chat + Task Panel -->
 			<RowDefinition Height="Auto"/>
+			<!-- Input Area -->
 		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<!-- Chat column -->
+			<ColumnDefinition Width="240"/>
+			<!-- Task Panel column -->
+		</Grid.ColumnDefinitions>
 
-		<!-- Header with ASCII Art - -->
-		<Border Grid.Row="0" Background="{StaticResource PrimaryColor}" Padding="10">
+		<!-- ═══ HEADER (spans both columns) ═══ -->
+		<Border Grid.Row="0" Grid.ColumnSpan="2" Background="{StaticResource PrimaryColor}" Padding="10">
 			<StackPanel>
-
 				<TextBlock Text="__  _    ___  ____ ___  ___  ________" FontFamily="Consolas" FontSize="10" Foreground="White" TextAlignment="Center"/>
-				<TextBlock Text="/ /`\\ \\_/| |_)| |_ | |_)| |_)/ / \\| |" FontFamily="Consolas" FontSize="10" Foreground="White" TextAlignment="Center"/>
-				<TextBlock Text="\\_\\_,|_| |_|_)|_|__|_| \\|_|_)\\_\\_/|_|" FontFamily="Consolas" FontSize="10" Foreground="White" TextAlignment="Center"/>
+				<TextBlock Text="/ /`\ \_/| |_)| |_ | |_)| |_)/ / \| |" FontFamily="Consolas" FontSize="10" Foreground="White" TextAlignment="Center"/>
+				<TextBlock Text="\_\_,|_| |_|_)|_|__|_| \|_|_)\_\_/|_|" FontFamily="Consolas" FontSize="10" Foreground="White" TextAlignment="Center"/>
 				<TextBlock Text="                    [LOCK]                    "
                            FontFamily="Consolas" FontSize="12" Foreground="#FFE6F0" 
                            TextAlignment="Center"/>
 				<TextBlock Text="         Your Digital Safety Companion         "
                            FontFamily="Consolas" FontSize="11" Foreground="#FFF0F5" 
                            TextAlignment="Center"/>
-				
 			</StackPanel>
 		</Border>
 
-		<!-- Info Bar - -->
-		<Border Grid.Row="1" Background="{StaticResource SecondaryColor}" Padding="8,5">
+		<!-- ═══ INFO BAR (spans both columns) ═══ -->
+		<Border Grid.Row="1" Grid.ColumnSpan="2" Background="{StaticResource SecondaryColor}" Padding="8,5">
 			<StackPanel Orientation="Horizontal">
 				<TextBlock Text="👤 User: " Foreground="White" FontWeight="Bold"/>
 				<TextBlock x:Name="UserNameText" Text="Guest" Foreground="#FFE6F0" FontWeight="Bold"/>
@@ -81,15 +83,43 @@
 			</StackPanel>
 		</Border>
 
-		<!-- Chat Messages - -->
-		<ScrollViewer Grid.Row="1" x:Name="ChatScrollViewer" 
+		<!-- ═══ CHAT MESSAGES (Column 0) ═══ -->
+		<ScrollViewer Grid.Row="2" Grid.Column="0" 
+                      x:Name="ChatScrollViewer" 
                       VerticalScrollBarVisibility="Auto"
-                      Background="{StaticResource BackgroundColor}" Margin="0,24,0,2" Grid.RowSpan="2">
+                      Background="{StaticResource BackgroundColor}">
 			<StackPanel x:Name="ChatMessagesPanel" Margin="10" Orientation="Vertical"/>
 		</ScrollViewer>
 
-		<!-- Input Section-->
-		<Border Grid.Row="3" Background="{StaticResource InputBackground}" Padding="10">
+		<!-- ═══ TASK PANEL (Column 1) ═══ -->
+		<Border Grid.Row="2" Grid.Column="1" Background="#2A2A3A" Margin="2,0,0,0">
+			<StackPanel Margin="10">
+				<TextBlock Text="📋 TASKS" FontWeight="Bold" Foreground="White" FontSize="14" Margin="0,0,0,10"/>
+
+				<Button Content="➕ Add Sample Task" Background="#FF69B4" Foreground="White" 
+                        Margin="0,5" Click="AddSampleTask_Click" Height="35"/>
+				<Button Content="📋 Show My Tasks" Background="#0077B6" Foreground="White" 
+                        Margin="0,5" Click="ShowTasks_Click" Height="35"/>
+				<Button Content="🎮 Start Quiz" Background="#2D6A4F" Foreground="White" 
+                        Margin="0,5" Click="StartQuiz_Click" Height="35"/>
+				<Button Content="📜 Activity Log" Background="#6C757D" Foreground="White" 
+                        Margin="0,5" Click="ShowActivityLog_Click" Height="35"/>
+				<Button Content="❌ Quit" Background="#DC3545" Foreground="White" 
+                        Margin="0,20,0,5" Click="QuitButton_Click" Height="35"/>
+
+				<TextBlock Text="Quick Commands:" Foreground="White" FontSize="11" Margin="0,15,0,5"/>
+				<TextBlock Text="• Add task - Enable 2FA" Foreground="#CCCCCC" FontSize="10" TextWrapping="Wrap"/>
+				<TextBlock Text="• Show tasks" Foreground="#CCCCCC" FontSize="10" TextWrapping="Wrap"/>
+				<TextBlock Text="• Complete task - 2FA" Foreground="#CCCCCC" FontSize="10" TextWrapping="Wrap"/>
+				<TextBlock Text="• Delete task - 2FA" Foreground="#CCCCCC" FontSize="10" TextWrapping="Wrap"/>
+				<TextBlock Text="• Start quiz" Foreground="#CCCCCC" FontSize="10" TextWrapping="Wrap"/>
+				<TextBlock Text="• Activity log" Foreground="#CCCCCC" FontSize="10" TextWrapping="Wrap"/>
+				<TextBlock Text="• Update interest to privacy" Foreground="#CCCCCC" FontSize="10" TextWrapping="Wrap"/>
+			</StackPanel>
+		</Border>
+
+		<!-- ═══ INPUT AREA (spans both columns) ═══ -->
+		<Border Grid.Row="3" Grid.ColumnSpan="2" Background="{StaticResource InputBackground}" Padding="10">
 			<Grid>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="*"/>
@@ -133,8 +163,9 @@
 			</Grid>
 		</Border>
 
-		<!-- Status -->
-		<StatusBar Grid.Row="3" VerticalAlignment="Bottom" Background="{StaticResource SecondaryColor}" Height="25" Margin="0,0,0,0">
+		<!-- ═══ STATUS BAR (spans both columns) ═══ -->
+		<StatusBar Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Bottom" 
+                   Background="{StaticResource SecondaryColor}" Height="25" Margin="0,0,0,0">
 			<StatusBarItem>
 				<TextBlock x:Name="StatusText" Text="Ready" Foreground="White" FontSize="10"/>
 			</StatusBarItem>

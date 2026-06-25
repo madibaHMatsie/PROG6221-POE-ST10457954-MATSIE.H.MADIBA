@@ -9,14 +9,37 @@ namespace CYBERSECURITY_AWARENESS.Services
 	{
 		private Memory _memory;
 		private SentimentAnalyser _sentiment;
+		private TaskAssist _taskAssist;
+		private Quiz _quiz;
+		private LogService _logService;
+		private NLPSimulation _nlp;
 		private Random _random = new Random();
 		private Dictionary<string, List<string>> _responseDatabase;
 		private Dictionary<string, string> _followUpTopics;
+
+		public ChatBot(Memory memory, SentimentAnalyser sentiment, TaskAssist taskAssist, Quiz quiz,
+					   LogService logService, NLPSimulation nlp)
+		{
+			_memory = memory;
+			_sentiment = sentiment;
+			_taskAssist = taskAssist;
+			_quiz = quiz;
+			_nlp = nlp;
+			_logService = logService;
+			InitializeResponses();
+			InitializeFollowUps();
+		}
 
 		public ChatBot(Memory memory, SentimentAnalyser sentiment)
 		{
 			_memory = memory;
 			_sentiment = sentiment;
+			
+			_logService = new LogService();
+			var db = new Database();
+			_taskAssist = new TaskAssist(db, _logService);
+			_quiz = new Quiz(_logService);
+			_nlp = new NLPSimulation();
 			InitializeResponses();
 			InitializeFollowUps();
 		}
@@ -77,151 +100,177 @@ namespace CYBERSECURITY_AWARENESS.Services
 			};
 		}
 
-		public async Task<string> GetResponseAsync(string userInput)
-		{
-			await Task.Delay(10); 
-
-			
-			if (string.IsNullOrEmpty(_memory.GetUserName()) && !userInput.Contains("my name is"))
-			{
-				if (userInput.Length < 30 && !userInput.Contains("?"))
-				{
-					_memory.SetUserName(userInput);
-					return $"Nice to meet you, {userInput}! I'll remember your name. What cybersecurity topic interests you?";
-				}
-			}
-
-			if (userInput.ToLower().Contains("my name is"))
-			{
-				string name = ExtractName(userInput);
-				_memory.SetUserName(name);
-				return $"Hello {name}! I'll remember that. What would you like to learn about cybersecurity?";
-			}
-
-			
-			if (userInput.ToLower().Contains("interested in") || userInput.ToLower().Contains("like to learn about"))
-			{
-				string interest = ExtractInterest(userInput);
-				_memory.SetUserInterest(interest);
-				return $"Great! I'll remember that you're interested in {interest}. Let me share some tips about {interest}.";
-			}
-
-			// Follow-up requests
-			foreach (var followUp in _followUpTopics)
-			{
-				if (userInput.ToLower().Contains(followUp.Key))
-				{
-					if (_responseDatabase.ContainsKey(followUp.Value))
-					{
-						var responses = _responseDatabase[followUp.Value];
-						return GetRandomResponse(responses);
-					}
-				}
-			}
-
-			// keywords in database
-			foreach (var keyword in _responseDatabase.Keys)
-			{
-				if (userInput.ToLower().Contains(keyword))
-				{
-					var responses = _responseDatabase[keyword];
-					string response = GetRandomResponse(responses);
-
-					string userName = _memory.GetUserName();
-					if (!string.IsNullOrEmpty(userName) && !response.Contains(userName))
-					{
-						response = $"{userName}, " + response.ToLower().FirstCharToUpper();
-					}
-
-					var sentiment = _sentiment.DetectSentiment(userInput);
-					if (sentiment.IsNegative)
-					{
-						response = "I understand your concern. " + response;
-					}
-					return response;
-				}
-			}
-
-			// Greetings
-			if (userInput.ToLower().Contains("hello") || userInput.ToLower().Contains("hi"))
-			{
-				string name = _memory.GetUserName();
-				return name != null ? $"Hi {name}! How can I help you today?" : "Hello! What's your name?";
-			}
-
-			if (userInput.ToLower().Contains("how are you"))
-				return "I'm functioning well, thank you! Ready to help you stay cyber-safe.";
-
-			if (userInput.ToLower().Contains("purpose") || userInput.ToLower().Contains("what can you do"))
-				return "I'm your Cyber Security Assistant. I help educate about online safety, password security, and recognizing scams.";
-
-			if (userInput.ToLower().Contains("thank"))
-				return "You're welcome! Stay safe online.";
-
-			// Response 
-			string userNameRecall = _memory.GetUserName();
-			string interestRecall = _memory.GetUserInterest();
-
-			if (!string.IsNullOrEmpty(interestRecall))
-				return $"Since you're interested in {interestRecall}, would you like me to share more tips about that topic? Or try asking about passwords, phishing, or privacy.";
-
-			if (!string.IsNullOrEmpty(userNameRecall))
-			{
-				return $"I'm not sure I understand, {userNameRecall}. Could you rephrase your question? Try asking about passwords, phishing, or privacy.";
-			}
-
-			return "I'm not sure I understand. Can you try rephrasing? You can ask me about passwords, phishing, privacy, or online scams.";
-		}
-
-		private string GetRandomResponse(List<string> responses)
-		{
-			return responses[_random.Next(responses.Count)];
-		}
-
-		private string ExtractName(string input)
-		{
-			string lower = input.ToLower();
-			int index = lower.IndexOf("my name is");
-			if (index >= 0)
-			{
-				string namePart = input.Substring(index + 10).Trim();
-				string[] words = namePart.Split(' ');
-				return words[0];
-			}
-			return input.Trim();
-		}
-
-      private string ExtractInterest(string input)
+		 public async Task<string> GetResponseAsync(string userInput)
         {
-          string lower = input.ToLower();
-         if (lower.Contains("update interest to"))
-               {
-                  int index = lower.IndexOf("update interest to");
-                  string interestPart = input.Substring(index + 19).Trim();
-                  return interestPart.Split(' ', '.', '?')[0];
+            await Task.Delay(10);
+
+            //  Check if quiz is active
+            if (_quiz.IsQuizActive)
+                return _quiz.SubmitAnswer(userInput);
+
+            //  commands via NLP
+            string intent = _nlp.DetectIntent(userInput);
+            switch (intent)
+            {
+                case "add_task":
+                    string title = _nlp.ExtractTaskTitle(userInput);
+                    string days = _nlp.ExtractReminderDays(userInput);
+                    return _taskAssist.AddTask(title, $"Cybersecurity task: {title}", days);
+
+                case "complete_task":
+                    return _taskAssist.CompleteTask(userInput);
+
+                case "delete_task":
+                    return _taskAssist.DeleteTask(userInput);
+
+                case "show_tasks":
+                    return _taskAssist.GetTasksList();
+
+                case "start_quiz":
+                    return _quiz.StartQuiz();
+
+                case "show_log":
+                    return _logService.GetLogSummary();
+
+                case "update_interest":
+                    string newInterest = _nlp.ExtractTaskTitle(userInput);
+                    _memory.SetUserInterest(newInterest);
+                    _logService.AddEntry("Interest Updated", $"User interest updated to: {newInterest}");
+                    return $"Great! I've updated your interest to {newInterest}. Ask me for tips about this topic!";
+
+                default:
+                    break;
             }
-          else if (lower.Contains("my new interest is"))
-          {
-             int index = lower.IndexOf("my new interest is");
-           string interestPart = input.Substring(index + 18).Trim();
-             return interestPart.Split(' ', '.', '?')[0];
-           }
-             else if (lower.Contains("interested in"))
-          {
-             int index = lower.IndexOf("interested in");
-               string interestPart = input.Substring(index + 13).Trim();
-             return interestPart.Split(' ', '.', '?')[0];
-           }
-               return "cybersecurity";
+
+            //  name input
+            if (string.IsNullOrEmpty(_memory.GetUserName()) && !userInput.Contains("my name is"))
+            {
+                if (userInput.Length < 30 && !userInput.Contains("?"))
+                {
+                    _memory.SetUserName(userInput);
+                    _logService.AddEntry("Name Set", $"User name: {userInput}");
+                    return $"Nice to meet you, {userInput}! I'll remember your name. What cybersecurity topic interests you?";
+                }
+            }
+
+            if (userInput.ToLower().Contains("my name is"))
+            {
+                string name = ExtractName(userInput);
+                _memory.SetUserName(name);
+                _logService.AddEntry("Name Set", $"User name: {name}");
+                return $"Hello {name}! I'll remember that. What would you like to learn about cybersecurity?";
+            }
+
+            
+            if (userInput.ToLower().Contains("interested in") || userInput.ToLower().Contains("like to learn about"))
+            {
+                string interest = ExtractInterest(userInput);
+                _memory.SetUserInterest(interest);
+                _logService.AddEntry("Interest Set", $"User interest: {interest}");
+                return $"Great! I'll remember that you're interested in {interest}. Let me share some tips about {interest}.";
+            }
+
+            
+            foreach (var followUp in _followUpTopics)
+            {
+                if (userInput.ToLower().Contains(followUp.Key))
+                {
+                    if (_responseDatabase.ContainsKey(followUp.Value))
+                    {
+                        var responses = _responseDatabase[followUp.Value];
+                        return GetRandomResponse(responses);
+                    }
+                }
+            }
+
+            //  keywords in database
+            foreach (var keyword in _responseDatabase.Keys)
+            {
+                if (userInput.ToLower().Contains(keyword))
+                {
+                    var responses = _responseDatabase[keyword];
+                    string response = GetRandomResponse(responses);
+
+                    string userName = _memory.GetUserName();
+                    if (!string.IsNullOrEmpty(userName) && !response.Contains(userName))
+                    {
+                        response = $"{userName}, " + response.ToLower().FirstCharToUpper();
+                    }
+
+                    var sentiment = _sentiment.DetectSentiment(userInput);
+                    if (sentiment.IsNegative)
+                    {
+                        response = "I understand your concern. " + response;
+                    }
+                    return response;
+                }
+            }
+
+            // 7. Greetings
+            if (userInput.ToLower().Contains("hello") || userInput.ToLower().Contains("hi"))
+            {
+                string name = _memory.GetUserName();
+                return name != null ? $"Hi {name}! How can I help you today?" : "Hello! What's your name?";
+            }
+
+            if (userInput.ToLower().Contains("how are you"))
+                return "I'm functioning well, thank you! Ready to help you stay cyber-safe.";
+
+            if (userInput.ToLower().Contains("purpose") || userInput.ToLower().Contains("what can you do"))
+                return "I'm your Cyber Security Assistant. I help educate about online safety, password security, and recognizing scams.";
+
+            if (userInput.ToLower().Contains("thank"))
+                return "You're welcome! Stay safe online.";
+
+            //   response with memory recall
+            string userNameRecall = _memory.GetUserName();
+            string interestRecall = _memory.GetUserInterest();
+
+            if (!string.IsNullOrEmpty(interestRecall))
+                return $"Since you're interested in {interestRecall}, would you like me to share more tips about that topic? Or try asking about passwords, phishing, or privacy.";
+
+            if (!string.IsNullOrEmpty(userNameRecall))
+                return $"I'm not sure I understand, {userNameRecall}. Could you rephrase? Try asking about passwords, phishing, or privacy.";
+
+            return "I'm not sure I understand. Can you try rephrasing? You can ask me about passwords, phishing, privacy, or online scams.";
         }
-	
-	public static class StringExtensions
-	{
-		public static string FirstCharToUpper(this string str)
-		{
-			if (string.IsNullOrEmpty(str))
-				return str;
-			return char.ToUpper(str[0]) + str.Substring(1);
-		}
-	}
+
+        private string GetRandomResponse(List<string> responses)
+        {
+            return responses[_random.Next(responses.Count)];
+        }
+
+        private string ExtractName(string input)
+        {
+            string lower = input.ToLower();
+            int index = lower.IndexOf("my name is");
+            if (index >= 0)
+            {
+                string namePart = input.Substring(index + 10).Trim();
+                return namePart.Split(' ')[0];
+            }
+            return input.Trim();
+        }
+
+        private string ExtractInterest(string input)
+        {
+            string lower = input.ToLower();
+            if (lower.Contains("interested in"))
+            {
+                int index = lower.IndexOf("interested in");
+                string interestPart = input.Substring(index + 13).Trim();
+                return interestPart.Split(' ', '.', '?')[0];
+            }
+            return "cybersecurity";
+        }
+    }
+
+    public static class StringExtensions
+    {
+        public static string FirstCharToUpper(this string str)
+        {
+            if (string.IsNullOrEmpty(str)) return str;
+            return char.ToUpper(str[0]) + str.Substring(1);
+        }
+    }
 }
