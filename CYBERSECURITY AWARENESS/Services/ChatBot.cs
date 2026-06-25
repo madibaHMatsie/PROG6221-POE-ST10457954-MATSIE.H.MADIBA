@@ -84,22 +84,13 @@ namespace CYBERSECURITY_AWARENESS.Services
 			
 			if (string.IsNullOrEmpty(_memory.GetUserName()) && !userInput.Contains("my name is"))
 			{
-				
 				if (userInput.Length < 30 && !userInput.Contains("?"))
 				{
 					_memory.SetUserName(userInput);
 					return $"Nice to meet you, {userInput}! I'll remember your name. What cybersecurity topic interests you?";
 				}
-				//  updating interest 
-                 if (userInput.ToLower().Contains("update interest") || userInput.ToLower().Contains("my new interest is"))
-                       {
-                      string newInterest = ExtractInterest(userInput);
-                       _memory.SetUserInterest(newInterest);
-                            return $"Got it! I've updated your interest to {newInterest}. Would you like some tips about that?";
-                          }
 			}
 
-			// Check for "my name is" pattern
 			if (userInput.ToLower().Contains("my name is"))
 			{
 				string name = ExtractName(userInput);
@@ -136,20 +127,17 @@ namespace CYBERSECURITY_AWARENESS.Services
 					var responses = _responseDatabase[keyword];
 					string response = GetRandomResponse(responses);
 
-					// Memory
 					string userName = _memory.GetUserName();
 					if (!string.IsNullOrEmpty(userName) && !response.Contains(userName))
 					{
 						response = $"{userName}, " + response.ToLower().FirstCharToUpper();
 					}
 
-					// Sentiment
 					var sentiment = _sentiment.DetectSentiment(userInput);
 					if (sentiment.IsNegative)
 					{
 						response = "I understand your concern. " + response;
 					}
-
 					return response;
 				}
 			}
@@ -161,32 +149,21 @@ namespace CYBERSECURITY_AWARENESS.Services
 				return name != null ? $"Hi {name}! How can I help you today?" : "Hello! What's your name?";
 			}
 
-			//  how are you
 			if (userInput.ToLower().Contains("how are you"))
-			{
 				return "I'm functioning well, thank you! Ready to help you stay cyber-safe.";
-			}
 
-			
 			if (userInput.ToLower().Contains("purpose") || userInput.ToLower().Contains("what can you do"))
-			{
 				return "I'm your Cyber Security Assistant. I help educate about online safety, password security, and recognizing scams.";
-			}
 
-			
 			if (userInput.ToLower().Contains("thank"))
-			{
 				return "You're welcome! Stay safe online.";
-			}
 
 			// Response 
 			string userNameRecall = _memory.GetUserName();
 			string interestRecall = _memory.GetUserInterest();
 
 			if (!string.IsNullOrEmpty(interestRecall))
-			{
 				return $"Since you're interested in {interestRecall}, would you like me to share more tips about that topic? Or try asking about passwords, phishing, or privacy.";
-			}
 
 			if (!string.IsNullOrEmpty(userNameRecall))
 			{
@@ -214,7 +191,6 @@ namespace CYBERSECURITY_AWARENESS.Services
 			return input.Trim();
 		}
 
-		
       private string ExtractInterest(string input)
         {
           string lower = input.ToLower();
@@ -239,7 +215,6 @@ namespace CYBERSECURITY_AWARENESS.Services
                return "cybersecurity";
         }
 	
-
 	public static class StringExtensions
 	{
 		public static string FirstCharToUpper(this string str)

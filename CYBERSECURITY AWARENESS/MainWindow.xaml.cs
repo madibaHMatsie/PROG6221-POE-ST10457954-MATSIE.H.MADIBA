@@ -1,24 +1,14 @@
 ﻿using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using CYBERSECURITY_AWARENESS.Services;
 
 namespace CYBERSECURITY_AWARENESS
 {
-    
     public partial class MainWindow : Window
     {
-		private ChatBot _chatbot;
-		private Audio _audio;
-		private Memory _memory;
-		private SentimentAnalyser _sentiment;
 
 		public MainWindow()
 		{
@@ -31,9 +21,6 @@ namespace CYBERSECURITY_AWARENESS
 		{
 			_memory = new Memory();
 			_sentiment = new SentimentAnalyser();
-			_chatbot = new ChatBot(_memory, _sentiment);
-			_audio = new Audio();
-		}
 		
 			
 
@@ -53,7 +40,6 @@ __  _    ___  ____ ___  ___  ________
 		
 			AddBotMessage("Hello! I'm CyberBot, your cybersecurity awareness chatbot.");
 			AddBotMessage("What's your name?");
-
 			UpdateStatus("Awaiting user name...");
 		}
 
@@ -86,9 +72,6 @@ __  _    ___  ____ ___  ___  ________
 			UpdateMoodDisplay(sentiment);
 
 			string botResponse = await _chatbot.GetResponseAsync(userInput);
-
-			
-
 			AddBotMessage(botResponse);
 			UpdateMemoryDisplay();
 			ScrollToBottom();
@@ -111,7 +94,6 @@ __  _    ___  ____ ___  ___  ________
 				TextWrapping = TextWrapping.Wrap,
 				FontSize = 13
 			};
-
 			border.Child = textBlock;
 			ChatMessagesPanel.Children.Add(border);
 		}
@@ -126,7 +108,6 @@ __  _    ___  ____ ___  ___  ________
 			// Handle multi-line messages
 			var stackPanel = new StackPanel();
 			string[] lines = message.Split('\n');
-
 			foreach (string line in lines)
 			{
 				var textBlock = new TextBlock
@@ -139,7 +120,6 @@ __  _    ___  ____ ___  ___  ________
 				};
 				stackPanel.Children.Add(textBlock);
 			}
-
 			border.Child = stackPanel;
 			ChatMessagesPanel.Children.Add(border);
 		}
@@ -157,8 +137,6 @@ __  _    ___  ____ ___  ___  ________
 		private void UpdateMoodDisplay(SentimentResult sentiment)
 		{
 			UserMoodText.Text = sentiment.Mood;
-
-			// Change colour based on mood
 			if (sentiment.IsNegative)
 				UserMoodText.Foreground = (Brush)FindResource("PrimaryColor");
 			else if (sentiment.IsPositive)
